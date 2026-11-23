@@ -1,0 +1,138 @@
+
+-- VENOM777 FLOATING MENU
+-- KEY: 123
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local infiniteJump = false
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "VENOM777"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function makeButton(parent, text, size, pos, color)
+    local b = Instance.new("TextButton")
+    b.Size = size
+    b.Position = pos
+    b.Text = text
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Parent = parent
+    return b
+end
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(230,160)
+frame.Position = UDim2.new(.5,-115,.5,-80)
+frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+frame.Active = true
+frame.Parent = gui
+
+local title = makeButton(frame,"VENOM777 MENU",
+    UDim2.new(1,0,0,35),UDim2.new(),Color3.fromRGB(25,25,25))
+
+title.TextColor3 = Color3.fromRGB(255,0,0)
+
+local key = Instance.new("TextBox")
+key.Size = UDim2.new(.8,0,0,30)
+key.Position = UDim2.new(.1,0,0,45)
+key.PlaceholderText = "INGRESA KEY"
+key.Parent = frame
+
+local verify = makeButton(frame,"VERIFICAR KEY",
+    UDim2.new(.8,0,0,30),UDim2.new(.1,0,.53,0),
+    Color3.fromRGB(90,0,0))
+
+local jump = makeButton(frame,"SALTO INFINITO: OFF",
+    UDim2.new(.8,0,0,30),UDim2.new(.1,0,.75,0),
+    Color3.fromRGB(90,0,0))
+jump.Visible = false
+
+local close = makeButton(frame,"X",
+    UDim2.fromOffset(30,30),UDim2.new(1,-30,0,0),
+    Color3.fromRGB(180,0,0))
+
+local floating = makeButton(gui,"VENOM777",
+    UDim2.fromOffset(110,42),UDim2.new(0,15,.5,0),
+    Color3.fromRGB(180,0,0))
+floating.Visible = false
+
+close.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    floating.Visible = true
+end)
+
+floating.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    floating.Visible = false
+end)
+
+verify.MouseButton1Click:Connect(function()
+    if key.Text == "123" then
+        key.Visible = false
+        verify.Visible = false
+        jump.Visible = true
+    else
+        key.Text = ""
+        key.PlaceholderText = "KEY INCORRECTA"
+    end
+end)
+
+jump.MouseButton1Click:Connect(function()
+    infiniteJump = not infiniteJump
+    jump.Text = infiniteJump and
+        "SALTO INFINITO: ON" or
+        "SALTO INFINITO: OFF"
+end)
+
+UIS.JumpRequest:Connect(function()
+    if infiniteJump then
+        local char = player.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+-- ARRASTRAR MENU Y BOTON FLOTANTE
+local function draggable(object)
+    local dragging = false
+    local startPos
+    local startInput
+    local dragInput
+
+    object.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startInput = input.Position
+            startPos = object.Position
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if dragging and
+        (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - startInput
+            object.Position = UDim2.new(
+                startPos.X.Scale,startPos.X.Offset + delta.X,
+                startPos.Y.Scale,startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+draggable(frame)
+draggable(floating)
